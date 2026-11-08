@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Preloader from '../Preloader.astro';
+import Nav from '../Nav.astro';
+import Hero from '../Hero.astro';
+import About from '../About.astro';
+import Journey from '../Journey.astro';
+import Projects from '../Projects.astro';
+import Screens from '../Screens.astro';
+import Services from '../Services.astro';
+import Footer from '../Footer.astro';
+import ProjectModal from '../ProjectModal.astro';
+import { pickLocale } from '../../lib/locale';
+import { screens } from '../../data/site';
+import { t, type Locale, type UIKey } from '../../i18n/ui';
+import type { ProjectPayload } from '../../lib/events';
+
+interface Props {
+	lang: Locale;
+}
+const { lang } = Astro.props;
+
+const entries = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const byId = new Map<string, ProjectPayload & { alt: string }>();
+for (const { id, data } of entries) {
+	const l = pickLocale(data.locales, lang);
+	const cover = await getImage({ src: data.cover, format: 'webp', width: 1600, quality: 82 });
+	byId.set(id, {
+		src: cover.src,
+		alt: l.title,
+		title: l.title,
+		subtitle: l.tagline,
+		description: l.description,
+		highlights: l.highlights,
+		stack: data.stack,
+		status: t(lang, `status.${data.status}` as UIKey),
+		year: data.year,
+		live: data.live,
+		repo: data.repo,
+		private: data.private,
+	});
+}
+const projects = [...byId.values()];
+
+const wheel = await Promise.all(
+	screens.map(async (s) => ({
+		image: (await getImage({ src: s.image, format: 'webp', width: 900, quality: 78 })).src,
+		title: s.title,
+		project: byId.get(s.project)!,
+	})),
+);
+---
+
+<Base lang={lang} title={t(lang, 'meta.title')} description={t(lang, 'meta.description')}>
+	<Preloader />
+	<Nav lang={lang} />
+	<Hero lang={lang} />
+	<About lang={lang} />
+	<Journey lang={lang} />
+	<Projects lang={lang} items={projects} />
+	<Screens lang={lang} items={wheel} />
+	<Services lang={lang} />
+	<Footer lang={lang} />
+	<ProjectModal lang={lang} />
+</Base>

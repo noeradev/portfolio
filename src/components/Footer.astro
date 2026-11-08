@@ -1,0 +1,131 @@
+---
+import { t, type Locale } from '../i18n/ui';
+import { site } from '../data/site';
+
+interface Props {
+	lang: Locale;
+}
+const { lang } = Astro.props;
+const icons = {
+	github:
+		'<svg class="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>',
+	telegram:
+		'<svg class="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>',
+	mail:
+		'<svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 9 6.5L21 7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+const pills = [
+	{ label: 'GitHub', href: site.github, icon: icons.github },
+	site.telegram && { label: 'Telegram', href: site.telegram, icon: icons.telegram },
+	site.email && { label: 'Email', href: `mailto:${site.email}`, icon: icons.mail },
+].filter(Boolean) as { label: string; href: string; icon: string }[];
+const contactHref = site.email ? `mailto:${site.email}` : (site.telegram ?? site.github);
+const navLinks = [
+	['nav.home', '#home'],
+	['nav.about', '#about'],
+	['nav.journey', '#journey'],
+	['nav.projects', '#projects'],
+	['nav.screens', '#screens'],
+	['nav.services', '#services'],
+] as const;
+---
+
+<footer class="relative w-full bg-[#04040b] text-white pt-10 md:pt-20 pb-10 mt-12 overflow-hidden" id="contact">
+	<div class="absolute inset-x-0 top-0 h-full pointer-events-none bg-[radial-gradient(45%_55%_at_50%_35%,rgba(108,92,247,0.20),transparent_70%)]"></div>
+
+	<!-- ghost wordmark: stretched edge-to-edge via textLength, bleeds off the bottom -->
+	<svg class="footer-ghost pointer-events-none select-none absolute inset-x-0 bottom-0 z-0 w-full" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
+		<defs>
+			<linearGradient id="footer-ghost-g" x1="0" y1="0" x2="0" y2="1">
+				<stop offset="0" stop-color="#b7a6ff" stop-opacity="0.5" />
+				<stop offset="1" stop-color="#7c5cf0" stop-opacity="0.2" />
+			</linearGradient>
+		</defs>
+		<text x="50" y="19.6" text-anchor="middle" textLength="100" lengthAdjust="spacingAndGlyphs">{t(lang, 'footer.title')}</text>
+	</svg>
+	<div class="absolute inset-x-0 bottom-0 z-[1] h-[16vw] pointer-events-none bg-gradient-to-t from-[#04040b] via-[#04040b]/40 to-transparent"></div>
+
+	<div class="relative z-10 max-w-[1400px] mx-auto px-6 md:px-14 flex flex-col items-center">
+		<div class="w-full max-w-3xl rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-6 md:px-10 py-9 md:py-11 text-center mt-8 md:mt-20 mb-[22vw] md:mb-[12vw]">
+			<p class="text-[10px] tracking-[0.32em] uppercase text-lavender/80 font-semibold mb-4">{t(lang, 'footer.label')}</p>
+			<h3 class="text-2xl md:text-4xl font-extrabold tracking-tight mb-3">{t(lang, 'footer.headline')}</h3>
+			<p class="text-sm md:text-base text-white/55 mb-8 max-w-md mx-auto">{t(lang, 'footer.note')}</p>
+			<div class="flex flex-wrap items-center justify-center gap-3.5">
+				{
+					pills.map(({ label, href, icon }) => (
+						<a
+							class="w-11 h-11 rounded-full border border-white/15 grid place-items-center text-white/70 hover:text-white hover:border-lavender/60 hover:-translate-y-0.5 transition"
+							href={href}
+							target="_blank"
+							rel="noopener"
+							aria-label={label}
+							title={label}
+						>
+							<Fragment set:html={icon} />
+						</a>
+					))
+				}
+				<a
+					href={contactHref}
+					target="_blank"
+					rel="noopener"
+					string="magnetic"
+					class="px-7 py-2.5 rounded-full bg-white text-void hover:bg-lavender text-xs font-bold tracking-wider uppercase transition hover:scale-105"
+				>
+					{t(lang, 'footer.contact')}
+				</a>
+			</div>
+		</div>
+
+		<nav class="w-full flex flex-wrap items-center justify-center gap-x-7 gap-y-2.5 mb-9 text-[11px] font-semibold tracking-[0.18em] uppercase" aria-label={t(lang, 'nav.menu')}>
+			{
+				navLinks.map(([key, href]) => (
+					<a class="text-white/40 hover:text-white transition-colors" href={href}>
+						{t(lang, key)}
+					</a>
+				))
+			}
+		</nav>
+
+		<div class="w-full pt-7 border-t border-white/[0.06] flex items-center justify-between text-[10px] tracking-widest uppercase text-white/35 font-semibold gap-4">
+			<div class="flex items-center gap-3">
+				<img src="/logo.svg" alt="" width="22" height="18" class="w-[22px] h-auto opacity-80" />
+				{t(lang, 'footer.rights')}
+			</div>
+			<div class="flex items-center gap-5">
+				<a
+					href="#home"
+					aria-label={t(lang, 'footer.top')}
+					title={t(lang, 'footer.top')}
+					string="magnetic"
+					class="w-10 h-10 rounded-full border border-white/15 grid place-items-center text-white/60 hover:text-white hover:border-lavender/60 hover:-translate-y-0.5 transition"
+				>
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M12 19V5" />
+						<path d="M5 12l7-7 7 7" />
+					</svg>
+				</a>
+			</div>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.footer-ghost {
+		height: 38vw;
+		translate: 0 21%;
+	}
+	@media (min-width: 768px) {
+		.footer-ghost {
+			height: 27vw;
+		}
+	}
+	.footer-ghost text {
+		font-family: inherit;
+		font-weight: 800;
+		font-size: 23px;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+		fill: url('#footer-ghost-g');
+	}
+</style>

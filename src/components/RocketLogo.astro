@@ -1,0 +1,241 @@
+---
+/**
+ * The user's logo, served verbatim from /image.svg — the file is never touched.
+ * The fetched SVG is adjusted in the DOM at runtime: the viewBox is zoomed onto
+ * the artwork, gradient ids are prefixed per instance, and flame-coloured shapes
+ * get .rk-flame so CSS can lick the exhaust. animated=false renders it static.
+ */
+interface Props {
+	id: string;
+	class?: string;
+	label?: string;
+	animated?: boolean;
+}
+const { id, class: className = '', label, animated = true } = Astro.props;
+const src = '/image.svg';
+const viewBox = '830 945 2430 2010'; // artwork bounds inside the 4000×4000 canvas
+---
+
+<div
+	class:list={['rk', animated && 'rk--live', className]}
+	style="aspect-ratio: 2430 / 2010"
+	role={label ? 'img' : undefined}
+	aria-label={label}
+	aria-hidden={label ? undefined : 'true'}
+	data-rk={id}
+	data-src={src}
+	data-vb={viewBox}
+>
+	{
+		animated && (
+			<>
+				<span class="rk-plume" aria-hidden="true" />
+				<span class="rk-ember rk-ember--1" aria-hidden="true" />
+				<span class="rk-ember rk-ember--2" aria-hidden="true" />
+				<span class="rk-ember rk-ember--3" aria-hidden="true" />
+				<span class="rk-ember rk-ember--4" aria-hidden="true" />
+				<span class="rk-ember rk-ember--5" aria-hidden="true" />
+			</>
+		)
+	}
+</div>
+
+<script>
+	const FLAME = new Set(['#FBDF51', '#F8A23E', '#F68F31', '#FEF2C3', '#FDE68A']);
+	const FLAME_CORE = new Set(['#FEF2C3', '#FDE68A']);
+	const io = new IntersectionObserver((entries) => entries.forEach((e) => e.target.toggleAttribute('data-paused', !e.isIntersecting)));
+
+	const slots = [...document.querySelectorAll<HTMLElement>('[data-rk]')];
+	if (slots.length) {
+		const src = slots[0].dataset.src!;
+		const w = window as unknown as { __rkSvg?: Promise<string> };
+		w.__rkSvg ??= fetch(src).then((r) => r.text());
+		w.__rkSvg
+			.then((svg) =>
+				slots.forEach((el) => {
+					const id = el.dataset.rk!;
+					el.innerHTML =
+						svg
+							.replace('viewBox="0 0 4000 4000"', `viewBox="${el.dataset.vb}"`)
+							.replace('width="4000" height="4000"', '')
+							.replace(/id="([^"]+)"/g, `id="${id}-$1"`)
+							.replace(/url\(#([^)]+)\)/g, `url(#${id}-$1)`)
+							.replace(
+								'</defs>',
+								`<filter id="${id}-fx"><feTurbulence type="fractalNoise" baseFrequency="0.02 0.09" numOctaves="2" seed="3" result="n"><animate attributeName="baseFrequency" dur="4.5s" values="0.02 0.09;0.025 0.105;0.02 0.09" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"><animate attributeName="scale" dur="4.5s" values="5;11;5" repeatCount="indefinite"/></feDisplacementMap></filter></defs>`,
+							) + el.innerHTML;
+					el.querySelectorAll('path, circle, ellipse, polygon').forEach((p) => {
+						const f = (p.getAttribute('fill') || '').toUpperCase();
+						if (FLAME.has(f)) p.classList.add('rk-flame');
+						if (FLAME_CORE.has(f)) p.classList.add('rk-flame--core');
+					});
+					const flames = [...el.querySelectorAll('.rk-flame')];
+					if (flames.length) {
+						const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+						g.setAttribute('filter', `url(#${id}-fx)`);
+						flames[0].before(g);
+						flames.forEach((p) => g.appendChild(p));
+					}
+					io.observe(el);
+				}),
+			)
+			.catch(() => {
+				slots.forEach((el) => {
+					const img = document.createElement('img');
+					img.src = src;
+					img.alt = '';
+					img.className = 'w-full h-full';
+					el.prepend(img);
+				});
+			});
+	}
+</script>
+
+<style is:global>
+	.rk {
+		position: relative;
+		display: block;
+	}
+	.rk > svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+
+	/* Flame: the displacement-map wobble comes from the SVG filter injected at
+	   runtime (organic fire, not rubber). On top of it: brightness flicker and
+	   an opacity breath on the hot core — no scale transforms anywhere. */
+	.rk--live .rk-flame {
+		animation: rk-flame 4.5s ease-in-out infinite;
+	}
+	.rk--live .rk-flame--core {
+		animation: rk-core 4.5s ease-in-out infinite;
+	}
+	.rk[data-paused] .rk-flame,
+	.rk[data-paused] .rk-flame--core,
+	.rk[data-paused] .rk-plume,
+	.rk[data-paused] .rk-ember {
+		animation-play-state: paused;
+	}
+	@keyframes rk-flame {
+		0%,
+		100% {
+			filter: brightness(1);
+		}
+		50% {
+			filter: brightness(1.22);
+		}
+	}
+
+	/* Soft plume glow that breathes at the exhaust tip — gives the fire body
+	   without deforming a single path of the artwork. */
+	.rk-plume {
+		position: absolute;
+		left: 11%;
+		top: 55%;
+		width: 24%;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: radial-gradient(closest-side, rgba(255, 213, 122, 0.85), rgba(246, 143, 49, 0.4) 55%, transparent 75%);
+		filter: blur(7px);
+		opacity: 0.8;
+		pointer-events: none;
+		animation: rk-plume 4.5s ease-in-out infinite;
+	}
+	@keyframes rk-plume {
+		0%,
+		100% {
+			opacity: 0.75;
+			transform: scale(0.98);
+		}
+		50% {
+			opacity: 1;
+			transform: scale(1.08) translate(-1%, 1%);
+		}
+	}
+	@keyframes rk-core {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.8;
+		}
+	}
+
+	/* Embers thrown off the flame tip, drifting down along the exhaust axis */
+	.rk-ember {
+		position: absolute;
+		border-radius: 50%;
+		background: #ffd57a;
+		box-shadow: 0 0 8px 2px rgba(255, 180, 80, 0.55);
+		opacity: 0;
+		pointer-events: none;
+		animation: rk-ember 2.7s ease-in infinite;
+	}
+	.rk-ember--1 {
+		left: 24%;
+		top: 68%;
+		width: 5px;
+		height: 5px;
+	}
+	.rk-ember--2 {
+		left: 20%;
+		top: 74%;
+		width: 4px;
+		height: 4px;
+		animation-delay: 0.9s;
+		animation-duration: 3.1s;
+	}
+	.rk-ember--3 {
+		left: 27%;
+		top: 63%;
+		width: 3px;
+		height: 3px;
+		animation-delay: 1.7s;
+		animation-duration: 2.3s;
+	}
+	.rk-ember--4 {
+		left: 22%;
+		top: 70%;
+		width: 4px;
+		height: 4px;
+		animation-delay: 0.45s;
+		animation-duration: 2.9s;
+	}
+	.rk-ember--5 {
+		left: 25%;
+		top: 66%;
+		width: 3px;
+		height: 3px;
+		animation-delay: 2.1s;
+		animation-duration: 2.5s;
+	}
+	@keyframes rk-ember {
+		0% {
+			transform: translate(0, 0) scale(1);
+			opacity: 0;
+		}
+		10% {
+			opacity: 0.9;
+		}
+		100% {
+			transform: translate(-2.2em, 1.4em) scale(0.35);
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rk--live .rk-flame,
+		.rk--live .rk-flame--core,
+		.rk-plume,
+		.rk-ember {
+			animation: none;
+		}
+		.rk-plume,
+		.rk-ember {
+			display: none;
+		}
+	}
+</style>

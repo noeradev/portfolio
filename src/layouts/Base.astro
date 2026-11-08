@@ -1,0 +1,46 @@
+---
+import '../styles/global.css';
+import { locales, type Locale } from '../i18n/ui';
+
+interface Props {
+	lang: Locale;
+	title: string;
+	description?: string;
+}
+
+const { lang, title, description = '' } = Astro.props;
+const site = Astro.site ?? Astro.url.origin;
+const canonical = new URL(Astro.url.pathname, site);
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#05060e" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="icon" type="image/svg+xml" href="/logo.svg" />
+		<link rel="canonical" href={canonical} />
+		{locales.map((l) => <link rel="alternate" hreflang={l} href={new URL(`/${l}/`, site)} />)}
+		<meta name="generator" content={Astro.generator} />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+	</head>
+	<body class="antialiased bg-void text-white">
+		<slot />
+		<script>
+			const idle = (fn: () => void) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2500 }) : setTimeout(fn, 600));
+			addEventListener('load', () =>
+				idle(() => {
+					// StringTune (parallax / magnetic) is decorative — keep it off the critical path.
+					import('../lib/stringtune').then((m) => m.getStringTune());
+					// Decode heavy below-the-fold images now, so the first scroll doesn't stall on them.
+					document.querySelectorAll<HTMLImageElement>('img[data-predecode], [data-wheel] img').forEach((img) => img.decode().catch(() => {}));
+				}),
+			);
+		</script>
+	</body>
+</html>

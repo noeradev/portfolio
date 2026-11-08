@@ -1,0 +1,263 @@
+@import "tailwindcss";
+@import "@fontsource-variable/manrope";
+@import "@fontsource-variable/jetbrains-mono";
+
+/* Engines generate DOM with Tailwind classes */
+@source "../engines";
+
+/* Palette sampled from the logo: blue → indigo → violet ribbon, navy hull, warm flame. */
+@theme {
+	--color-void: #05060e;
+	--color-abyss: #080916;
+	--color-panel: #0d0f20;
+	--color-panel-2: #13162c;
+	--color-blue: #4b8dff;
+	--color-indigo: #6c6cf7;
+	--color-violet: #a855f7;
+	--color-lavender: #c4b5fd;
+	--color-flame: #ffb547;
+	--color-mute: #8c90ad;
+
+	--font-sans: "Manrope Variable", system-ui, sans-serif;
+	--font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+	--ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+	scroll-behavior: smooth;
+}
+body {
+	font-family: var(--font-sans);
+	background: var(--color-void);
+	color: #eef0fa;
+	overflow-x: clip;
+	-webkit-font-smoothing: antialiased;
+}
+::selection {
+	background: var(--color-indigo);
+	color: #fff;
+}
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+.no-scrollbar {
+	scrollbar-width: none;
+}
+
+/* ============ Editorial type (ECHO metallic gradients, recoloured) ============ */
+/* background-clip: text clips glyph ink to the element box — without the padding
+   diacritics above the cap/x-height (й, ё, қ…) are cut off. Negative margin keeps layout. */
+.cosmic-title {
+	display: inline-block;
+	padding: 0.14em 0.06em 0.28em;
+	margin: -0.14em -0.06em -0.28em;
+	background: linear-gradient(180deg, #e9e4ff 0%, #b6a6ff 30%, #7c6cf7 58%, #4b3fb0 82%, #1a1640 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+.footer-title {
+	display: inline-block;
+	padding: 0.14em 0.06em 0.28em;
+	margin: -0.14em -0.06em -0.28em;
+	background: linear-gradient(180deg, #ffffff 0%, #b9b0ff 45%, #6c5cf0 75%, #2a2470 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	transition: filter 0.3s ease;
+}
+.footer-title:hover {
+	filter: brightness(1.2);
+}
+.brand-gradient {
+	display: inline-block;
+	padding: 0.16em 0.06em 0.28em;
+	margin: -0.16em -0.06em -0.28em;
+	background: linear-gradient(100deg, #4b8dff, #7c6cf7 50%, #b45af0);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.circle-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid rgb(255 255 255 / 0.18);
+	border-radius: 9999px;
+	transition:
+		transform 0.25s var(--ease-expo),
+		border-color 0.25s,
+		background-color 0.25s;
+}
+.circle-btn:hover {
+	border-color: var(--color-lavender);
+	background: rgb(124 108 247 / 0.12);
+	transform: scale(1.08);
+}
+
+/* ============ Experience (horizontal canvas) ============ */
+[data-exp="stage"],
+[data-parallax-factor] {
+	will-change: transform;
+}
+[data-exp="progress"] {
+	transform-origin: left;
+	transform: scaleX(0);
+}
+.exp-jump[data-active] {
+	color: #fff;
+	background: rgb(124 108 247 / 0.22);
+	border-color: rgb(167 139 250 / 0.5);
+}
+@media (prefers-reduced-motion: reduce) {
+	#journey {
+		height: auto !important;
+	}
+	#journey [data-exp="viewport"] {
+		position: relative !important;
+		height: auto !important;
+		overflow: visible !important;
+	}
+	#journey [data-exp="stage"] {
+		flex-direction: column !important;
+		width: 100% !important;
+		transform: none !important;
+	}
+	#journey .exp-panel {
+		width: 100% !important;
+		padding-block: 5rem !important;
+	}
+}
+
+/* ============ Accordion ============ */
+.accordion-content {
+	display: grid;
+	grid-template-rows: 0fr;
+	opacity: 0;
+	transition:
+		grid-template-rows 0.45s var(--ease-expo),
+		opacity 0.3s ease,
+		margin 0.3s ease;
+}
+.accordion-content > div {
+	overflow: hidden;
+}
+.accordion-item[data-active] .accordion-content {
+	grid-template-rows: 1fr;
+	opacity: 1;
+	margin-top: 1rem;
+}
+
+/* ============ FlexCarousel (ECHO FlexCarousel.css) ============ */
+.flex-carousel {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	cursor: grab;
+	touch-action: pan-y;
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-tap-highlight-color: transparent;
+	overscroll-behavior: contain;
+	outline: none;
+}
+.flex-carousel[data-hover="open"] { cursor: zoom-in; }
+.flex-carousel[data-hover="close"] { cursor: zoom-out; }
+.flex-carousel[data-dragging] { cursor: grabbing; }
+.flex-carousel:focus-visible { box-shadow: inset 0 0 0 2px rgb(167 139 250 / 0.6); }
+.flex-carousel__caption {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: calc(50% + var(--flex-carousel-half) * var(--flex-carousel-lift, 1) + 22px);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 0 16px;
+	pointer-events: none;
+	text-align: center;
+	animation: flex-carousel-reveal 900ms ease both;
+}
+.flex-carousel__title {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	max-width: 100%;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1.35;
+	color: #eef0fa;
+	animation: flex-carousel-title 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.flex-carousel__subtitle { font-weight: 400; opacity: 0.6; }
+.flex-carousel__count {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	font-size: 12px;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	color: var(--color-lavender);
+	opacity: 0.6;
+	transition: opacity 400ms ease;
+}
+.flex-carousel__count[data-hidden] { opacity: 0; }
+@media (max-width: 767px) {
+	/* Anchor the caption to the stage's bottom edge on phones — the
+	   offset-based position clipped the counter and hugged the card.
+	   Must come after the base rule (equal specificity). */
+	.flex-carousel__caption {
+		top: auto;
+		bottom: 14px;
+	}
+}
+.flex-carousel__digits { display: inline-flex; }
+.flex-carousel__digit { display: inline-block; height: 1.05em; overflow: hidden; }
+.flex-carousel__reel { display: flex; flex-direction: column; transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1); }
+.flex-carousel__reel span { height: 1em; }
+.flex-carousel__slash { opacity: 0.6; }
+.flex-carousel__live {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+@keyframes flex-carousel-title {
+	from { opacity: 0; transform: translateY(8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+@keyframes flex-carousel-reveal {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+/* ============ Modal ============ */
+[data-modal] {
+	transition: opacity 380ms var(--ease-expo);
+}
+[data-modal] [data-modal-card] {
+	transition:
+		transform 440ms var(--ease-expo),
+		opacity 360ms var(--ease-expo);
+}
+[data-modal]:not([data-open]) {
+	opacity: 0;
+	pointer-events: none;
+}
+[data-modal]:not([data-open]) [data-modal-card] {
+	opacity: 0;
+	transform: translateY(16px) scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html { scroll-behavior: auto; }
+	.flex-carousel__caption,
+	.flex-carousel__title { animation: none; }
+	.flex-carousel__reel { transition: none; }
+}

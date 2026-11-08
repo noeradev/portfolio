@@ -1,0 +1,88 @@
+---
+import { t, type Locale, type UIKey } from '../i18n/ui';
+
+interface Props {
+	lang: Locale;
+}
+const { lang } = Astro.props;
+const items = [1, 2, 3, 4].map((n) => ({
+	title: t(lang, `services.${n}.title` as UIKey),
+	text: t(lang, `services.${n}.text` as UIKey),
+	meta: t(lang, `services.${n}.meta` as UIKey),
+}));
+---
+
+<section class="max-w-[1400px] mx-auto px-6 md:px-14 py-12 md:py-20" id="services">
+	<div class="text-center max-w-2xl mx-auto mb-14">
+		<h2 class="text-3xl md:text-5xl font-extrabold uppercase tracking-[-0.04em] mb-4">{t(lang, 'services.title')}</h2>
+		<p class="text-xs uppercase font-medium leading-relaxed tracking-wider text-white/50">{t(lang, 'services.sub')}</p>
+	</div>
+
+	<div class="max-w-4xl mx-auto flex flex-col gap-4" data-accordion>
+		{
+			items.map((s, i) => (
+				<div
+					class="accordion-item group w-full text-left rounded-2xl border border-white/10 bg-white/[0.02] transition-all duration-300 cursor-pointer overflow-hidden hover:border-white/25 data-[active]:border-violet-400/45 data-[active]:bg-[linear-gradient(115deg,#1b1546_0%,#120e2e_55%,#0b0a20_100%)] data-[active]:shadow-[0_24px_60px_-28px_rgba(124,92,255,0.55)]"
+					data-active={i === 0 ? '' : undefined}
+					role="button"
+					tabindex="0"
+					aria-expanded={i === 0 ? 'true' : 'false'}
+				>
+					<div class="flex items-center gap-4 md:gap-6 px-5 md:px-7 py-5 md:py-6">
+						<span class="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full border border-white/15 grid place-items-center text-[11px] font-mono text-white/50 transition-colors group-data-[active]:border-lavender/60 group-data-[active]:bg-lavender/15 group-data-[active]:text-lavender">
+							0{i + 1}
+						</span>
+						<span class="flex-1 text-base md:text-xl font-extrabold tracking-wider uppercase text-white/85 group-data-[active]:text-white transition-colors">
+							{s.title}
+						</span>
+						<span class="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full border border-white/15 grid place-items-center transition-all duration-300 group-data-[active]:rotate-180 group-data-[active]:border-lavender/60 group-data-[active]:text-lavender">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+								<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</span>
+					</div>
+					<div class="accordion-content">
+						<div class="px-5 md:px-7 pb-6 md:pl-[4.5rem]">
+							<p class="text-xs md:text-sm text-white/70 leading-relaxed max-w-2xl">{s.text}</p>
+							<div class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-4 border-t border-white/10">
+								<div class="flex flex-wrap gap-1.5">
+									{
+										s.meta
+											.split(':')[1]
+											?.split(',')
+											.map((chip) => (
+												<span class="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-mono text-white/55 whitespace-nowrap">
+													{chip.trim()}
+												</span>
+											))
+									}
+								</div>
+								<a href="#contact" class="pointer-events-auto text-xs font-bold underline underline-offset-4 shrink-0 text-lavender hover:text-white transition-colors">
+									{t(lang, 'services.cta')}
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			))
+		}
+	</div>
+</section>
+
+<script>
+	const items = [...document.querySelectorAll<HTMLElement>('[data-accordion] .accordion-item')];
+	const select = (el: HTMLElement) =>
+		items.forEach((it) => {
+			it.toggleAttribute('data-active', it === el);
+			it.setAttribute('aria-expanded', String(it === el));
+		});
+	items.forEach((it) => {
+		it.addEventListener('click', (e) => !(e.target as Element).closest('a') && select(it));
+		it.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), select(it)));
+	});
+	// Hero discipline links carry data-svc — they jump here AND open the right card
+	document.addEventListener('click', (e) => {
+		const link = (e.target as Element).closest<HTMLElement>('[data-svc]');
+		if (link) select(items[Number(link.dataset.svc)] ?? items[0]);
+	});
+</script>

@@ -1,0 +1,114 @@
+---
+import { t, type Locale } from '../i18n/ui';
+import type { ProjectPayload } from '../lib/events';
+
+interface Props {
+	lang: Locale;
+	items: (ProjectPayload & { alt: string })[];
+}
+const { lang, items } = Astro.props;
+---
+
+<section class="max-w-[1400px] mx-auto px-6 md:px-14 py-10 md:py-16" id="projects">
+	<div class="mb-8 flex items-baseline justify-between gap-4">
+		<h2 class="text-3xl md:text-5xl font-extrabold uppercase tracking-[-0.04em]">{t(lang, 'projects.title')}</h2>
+		<span class="md:hidden text-[10px] font-mono tracking-widest uppercase text-white/40">{t(lang, 'screens.hint')}</span>
+	</div>
+	<div class="md:rounded-3xl md:border md:border-white/10 md:bg-[radial-gradient(70%_80%_at_50%_40%,#141432,#08091a)] overflow-hidden md:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] h-[400px] md:h-[560px] -mx-6 md:mx-0">
+		<div
+			data-carousel
+			data-items={JSON.stringify(items)}
+			data-label={t(lang, 'projects.carousel')}
+			class="w-full h-full"
+			style="position: relative;"
+		>
+		</div>
+	</div>
+
+	<div class="hidden gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-6 px-6" data-project-strip>
+		{
+			items.map((p, i) => (
+				<button
+					type="button"
+					data-project-card={i}
+					class="snap-center shrink-0 w-[82%] text-left rounded-2xl border border-white/10 bg-[#0d0f20] overflow-hidden"
+				>
+					<img src={p.src} alt={p.alt} class="w-full aspect-[16/10] object-cover object-top" loading="lazy" decoding="async" draggable="false" />
+					<div class="p-4">
+						<div class="flex items-center justify-between gap-3">
+							<span class="font-bold text-sm uppercase tracking-wide truncate">{p.title}</span>
+							<span class="text-[10px] font-mono text-lavender/80 shrink-0">{p.status}</span>
+						</div>
+						<p class="text-[11px] text-white/55 mt-1.5 leading-relaxed line-clamp-2">{p.subtitle}</p>
+						<span class="text-[10px] font-mono text-white/30 mt-2 block">
+							{String(i + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
+						</span>
+					</div>
+				</button>
+			))
+		}
+	</div>
+</section>
+
+<script>
+	import { initFlexCarousel } from '../engines/flex-carousel.js';
+	import { openProject, type ProjectPayload } from '../lib/events';
+
+	const strip = document.querySelector<HTMLElement>('[data-project-strip]');
+	const el = document.querySelector<HTMLElement>('[data-carousel]');
+	const frame = el?.parentElement;
+	const items: ProjectPayload[] = JSON.parse(el?.dataset.items || '[]');
+
+	// The WebGL carousel runs everywhere — it caps its own pixel budget, pauses
+	// offscreen, and passes vertical touch-scrolls through. The DOM strip is the
+	// fallback for devices without WebGL2.
+	const isMobile = window.matchMedia('(max-width: 767px)').matches;
+	let api = null;
+	if (el) {
+		try {
+			api = initFlexCarousel(el, {
+				items,
+				label: el.dataset.label,
+				className: el.className,
+				// Portrait phones get the flat 'arch' lens — 'liquid' tilts cards
+				// upward and leaves a dead void underneath on narrow stages.
+				preset: isMobile ? 'arch' : 'liquid',
+				intro: 'rise',
+				cardHeight: isMobile ? 0.66 : 0.5,
+				gap: isMobile ? 90 : 12,
+				// Square cards crop tall UI shots the least while still reading
+				// as coverflow — 'landscape' gutted them, 'natural' stayed narrow.
+				fit: isMobile ? 'square' : 'natural',
+				bend: isMobile ? 0 : undefined,
+				// The compositing lens sizes itself from stage WIDTH — on phones
+				// it squeezed every card into a small center patch. Widen it so
+				// the front card can actually fill the stage.
+				lensWidth: isMobile ? 2.2 : undefined,
+				lensHeight: isMobile ? 2.2 : undefined,
+				reach: isMobile ? 0.2 : undefined,
+				radius: isMobile ? 18 : 0,
+				// Raise the row on phones — the caption is pinned to the stage
+				// bottom, so the card must clear it instead of overlapping.
+				liftY: isMobile ? 40 : 0,
+				squeeze: 0.2,
+				focusOnClick: true,
+				captions: true,
+				onSelect: (_: number, item: ProjectPayload) => openProject(item),
+			});
+		} catch {
+			api = null;
+		}
+	}
+	if (!api) {
+		frame?.classList.add('hidden');
+		strip?.classList.remove('hidden');
+		strip?.classList.add('flex');
+	}
+
+	strip?.querySelectorAll<HTMLElement>('[data-project-card]').forEach((card) =>
+		card.addEventListener('click', () => {
+			const item = items[+card.dataset.projectCard!];
+			if (item) openProject(item);
+		}),
+	);
+</script>

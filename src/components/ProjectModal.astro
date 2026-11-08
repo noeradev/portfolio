@@ -1,0 +1,85 @@
+---
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+	lang: Locale;
+}
+const { lang } = Astro.props;
+const labels = {
+	highlights: t(lang, 'modal.highlights'),
+	stack: t(lang, 'modal.stack'),
+	live: t(lang, 'modal.live'),
+	repo: t(lang, 'modal.repo'),
+	private: t(lang, 'modal.private'),
+};
+---
+
+<div
+	data-modal
+	data-labels={JSON.stringify(labels)}
+	class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4"
+	role="dialog"
+	aria-modal="true"
+	aria-labelledby="pm-title"
+>
+	<div data-modal-card class="relative bg-panel border border-white/10 rounded-[32px] max-w-2xl w-full max-h-[90vh] overflow-y-auto no-scrollbar shadow-[0_40px_120px_-30px_rgba(76,60,200,0.6)]">
+		<img data-pm="image" alt="" class="w-full aspect-[16/10] object-cover object-top rounded-t-[32px] border-b border-white/10" />
+		<div class="p-6 sm:p-8 md:p-9">
+			<div class="relative text-center pb-4 mb-5 border-b border-white/10">
+				<span data-pm="status" class="block text-[11px] font-bold tracking-widest uppercase text-lavender/80 mb-1"></span>
+				<h3 id="pm-title" data-pm="title" class="text-2xl sm:text-3xl font-extrabold uppercase tracking-[-0.03em]"></h3>
+				<p data-pm="subtitle" class="mt-2 text-sm text-white/60"></p>
+			</div>
+			<div data-pm="body" class="space-y-5 text-sm text-white/75"></div>
+		</div>
+		<button
+			type="button"
+			data-modal-close
+			class="absolute right-4 top-4 w-9 h-9 rounded-full border border-white/20 bg-void/70 backdrop-blur grid place-items-center text-white/70 hover:text-white hover:border-white transition"
+			aria-label={t(lang, 'modal.close')}>✕</button
+		>
+	</div>
+</div>
+
+<script>
+	import { onOpenProject, type ProjectPayload } from '../lib/events';
+	const modal = document.querySelector<HTMLElement>('[data-modal]')!;
+	const L = JSON.parse(modal.dataset.labels!) as Record<string, string>;
+	const $ = (k: string) => modal.querySelector<HTMLElement>(`[data-pm="${k}"]`)!;
+	const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+	let lastFocus: Element | null = null;
+
+	const close = () => {
+		modal.removeAttribute('data-open');
+		document.documentElement.style.overflow = '';
+		(lastFocus as HTMLElement | null)?.focus?.();
+	};
+
+	onOpenProject((p: ProjectPayload) => {
+		lastFocus = document.activeElement;
+		($('image') as HTMLImageElement).src = p.src ?? '';
+		$('status').textContent = [p.status, p.year].filter(Boolean).join(' · ');
+		$('title').textContent = p.title;
+		$('subtitle').textContent = p.subtitle ?? '';
+		const btn = (href: string, label: string, primary = false) =>
+			`<a href="${esc(href)}" target="_blank" rel="noopener" class="px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase transition ${
+				primary ? 'bg-white text-void hover:bg-lavender' : 'border border-white/25 hover:border-white'
+			}">${esc(label)} ↗</a>`;
+		$('body').innerHTML = `
+			<p class="leading-relaxed">${esc(p.description ?? '')}</p>
+			${p.highlights?.length ? `<div><div class="text-[11px] font-bold tracking-widest uppercase text-white/45 mb-2">${L.highlights}</div><ul class="space-y-1.5">${p.highlights.map((h) => `<li class="flex gap-2"><span class="mt-2 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue to-violet shrink-0"></span>${esc(h)}</li>`).join('')}</ul></div>` : ''}
+			${p.stack?.length ? `<div><div class="text-[11px] font-bold tracking-widest uppercase text-white/45 mb-2">${L.stack}</div><div class="flex flex-wrap gap-2">${p.stack.map((s) => `<span class="px-3 py-1 rounded-full border border-white/12 bg-white/[0.03] text-[11px] font-mono text-white/80">${esc(s)}</span>`).join('')}</div></div>` : ''}
+			<div class="flex flex-wrap items-center gap-3 pt-2">
+				${p.live ? btn(p.live, L.live, true) : ''}
+				${p.repo ? btn(p.repo, L.repo) : ''}
+				${p.private ? `<span class="text-[11px] font-mono uppercase text-white/45">🔒 ${L.private}</span>` : ''}
+			</div>`;
+		modal.setAttribute('data-open', '');
+		document.documentElement.style.overflow = 'hidden';
+		modal.querySelector<HTMLElement>('[data-modal-close]')?.focus();
+	});
+
+	modal.addEventListener('click', (e) => e.target === modal && close());
+	modal.querySelector('[data-modal-close]')?.addEventListener('click', close);
+	addEventListener('keydown', (e) => e.key === 'Escape' && modal.hasAttribute('data-open') && close());
+</script>

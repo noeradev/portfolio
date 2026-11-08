@@ -1,0 +1,120 @@
+---
+import { t, type Locale, type UIKey } from '../i18n/ui';
+
+interface Props {
+	lang: Locale;
+}
+const { lang } = Astro.props;
+const k = (s: string) => t(lang, s as UIKey);
+const chapters = [1, 2, 3].map((n) => ({
+	n,
+	bg: k(`exp.c${n}.bg`),
+	tag: k(`exp.c${n}.tag`),
+	a: k(`exp.c${n}.title.a`),
+	b: k(`exp.c${n}.title.b`),
+	text: k(`exp.c${n}.text`),
+	m: [1, 2, 3].map((i) => ({ k: k(`exp.c${n}.m${i}.k`), v: k(`exp.c${n}.m${i}.v`) })),
+}));
+// Phase thresholds match the panel layout (intro 85vw + 3 × 100vw)
+const phases = [
+	{ from: 0, label: t(lang, 'exp.phase.0') },
+	{ from: 0.22, label: chapters[0].tag },
+	{ from: 0.55, label: chapters[1].tag },
+	{ from: 0.85, label: chapters[2].tag },
+];
+const jumps = [0.36, 0.68, 1];
+const top = t(lang, 'exp.ticker.top');
+const bottom = t(lang, 'exp.ticker.bottom');
+---
+
+<section class="relative w-full bg-abyss text-white" id="journey" style="height: 340vh;" data-exp-root>
+	{phases.map((p) => <i hidden data-phase-from={p.from} data-phase-label={p.label} />)}
+
+	<div data-exp="viewport" class="sticky top-0 w-full h-[100dvh] overflow-hidden bg-abyss flex flex-col justify-between select-none">
+		<div class="absolute inset-0 pointer-events-none opacity-25" style="background-image: radial-gradient(rgba(167,139,250,0.10) 1px, transparent 1px); background-size: 40px 40px;"></div>
+		<div class="absolute inset-0 pointer-events-none bg-[radial-gradient(50%_60%_at_70%_50%,rgba(76,60,200,0.16),transparent_70%)]"></div>
+
+		<div class="absolute inset-0 flex flex-col justify-around pointer-events-none overflow-hidden opacity-[0.05]" aria-hidden="true">
+			<div data-exp="ticker-top" class="whitespace-nowrap font-extrabold uppercase text-[14vw] tracking-tighter leading-none">{top} {top} {top}</div>
+			<div data-exp="ticker-bottom" class="whitespace-nowrap font-extrabold uppercase text-[14vw] tracking-tighter leading-none -ml-[60vw]">{bottom} {bottom} {bottom}</div>
+		</div>
+
+		<header class="relative z-30 w-full px-6 md:px-14 pt-6 pb-4 flex items-center justify-between border-b border-white/[0.08] bg-abyss">
+			<span data-exp="phase" class="text-[11px] font-semibold tracking-widest uppercase text-white/60">{phases[0].label}</span>
+			<div class="w-24 sm:w-36 h-[2px] bg-white/10 rounded-full overflow-hidden">
+				<div data-exp="progress" class="h-full w-full bg-gradient-to-r from-blue via-indigo to-violet"></div>
+			</div>
+		</header>
+
+		<div class="relative z-20 flex-1 w-full overflow-hidden flex items-center">
+			<div data-exp="stage" class="flex items-center h-full" style="width: 385vw;">
+				<div class="exp-panel flex-shrink-0 w-[95vw] md:w-[85vw] px-8 md:px-16 lg:px-24 flex flex-col justify-center">
+					<div class="max-w-3xl">
+						<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-lavender/25 bg-white/[0.04] text-[10px] font-semibold tracking-widest uppercase text-lavender mb-6">
+							{t(lang, 'exp.badge')}
+						</div>
+						<h2 class="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold uppercase tracking-[-0.045em] leading-[0.95] mb-8">
+							{t(lang, 'exp.title.a')}<br /><span class="cosmic-title">{t(lang, 'exp.title.b')}</span>
+						</h2>
+						<p class="text-base sm:text-lg md:text-xl text-white/70 leading-relaxed max-w-xl">{t(lang, 'exp.intro')}</p>
+					</div>
+				</div>
+
+				{
+					chapters.map((c) => (
+						<div class="exp-panel relative flex-shrink-0 w-[105vw] md:w-[100vw] px-8 md:px-16 lg:px-24 flex flex-col justify-center">
+							<div
+								class="absolute -top-8 right-12 md:right-28 text-[12vw] md:text-[14vw] font-extrabold uppercase text-lavender/[0.05] tracking-tighter whitespace-nowrap pointer-events-none"
+								data-parallax-factor="0.15"
+								aria-hidden="true"
+							>
+								{c.bg}
+							</div>
+							<div class="relative z-10 max-w-4xl">
+								<div class="flex items-center gap-4 mb-4">
+									<span class="text-xs font-semibold tracking-widest uppercase text-white/50 font-mono">0{c.n}</span>
+									<span class="h-px w-12 bg-gradient-to-r from-blue to-violet" />
+									<span class="text-xs font-bold tracking-widest uppercase whitespace-nowrap">{c.tag}</span>
+								</div>
+								<h3 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-[-0.045em] leading-[0.96] mb-6">
+									{c.a}
+									<br />
+									<span class="brand-gradient">{c.b}</span>
+								</h3>
+								<p class="text-sm sm:text-base md:text-lg text-white/70 leading-relaxed max-w-2xl mb-8">{c.text}</p>
+								<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-white/10 max-w-3xl">
+									{c.m.map((m) => (
+										<div>
+											<div class="text-[10px] font-bold text-lavender/70 uppercase tracking-widest mb-1.5">{m.k}</div>
+											<div class="text-xs sm:text-sm text-white/85 font-medium leading-snug">{m.v}</div>
+										</div>
+									))}
+								</div>
+							</div>
+						</div>
+					))
+				}
+			</div>
+		</div>
+
+		<footer class="relative z-30 w-full px-6 md:px-14 py-4 flex items-center gap-2 sm:gap-4 border-t border-white/[0.08] bg-abyss overflow-x-auto no-scrollbar">
+			{
+				chapters.map((c, i) => (
+					<button
+						type="button"
+						class="exp-jump shrink-0 whitespace-nowrap text-[11px] font-bold tracking-widest uppercase px-3 py-1 rounded-md border border-white/5 text-white/45 hover:text-white hover:border-white/20 transition"
+						data-target-progress={jumps[i]}
+					>
+						{c.tag}
+					</button>
+				))
+			}
+		</footer>
+	</div>
+</section>
+
+<script>
+	import { initExperience } from '../engines/experience';
+	const s = document.querySelector<HTMLElement>('[data-exp-root]');
+	if (s) initExperience(s);
+</script>

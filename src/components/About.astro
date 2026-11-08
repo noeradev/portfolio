@@ -1,0 +1,204 @@
+---
+import { getImage } from 'astro:assets';
+import spaceBg from '../assets/art/space-bg.png';
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+	lang: Locale;
+}
+const { lang } = Astro.props;
+const bg = await getImage({ src: spaceBg, format: 'webp', width: 2000, quality: 78 });
+---
+
+<section class="relative w-full bg-void text-white" id="about" style="min-height: 300vh;" data-sem-root>
+	<div class="sticky top-0 w-full h-[100dvh] overflow-hidden flex flex-col items-center justify-start z-10">
+		<div data-sem="bg" class="absolute inset-0 z-0 pointer-events-none" style="will-change: opacity;">
+			<img src={bg.src} alt="" class="w-full h-full object-cover object-center opacity-80" loading="eager" decoding="async" data-predecode />
+		</div>
+
+		<div class="relative z-10 flex flex-col items-center justify-center w-full h-[100dvh]">
+			<div
+				data-sem="media"
+				class="absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl overflow-hidden bg-[#0a0d26]"
+				style="width: 300px; height: 400px; max-width: 95vw; max-height: 85vh; box-shadow: 0 25px 80px -15px rgba(60, 40, 160, 0.55); border: 1px solid rgba(167,139,250,0.45); backface-visibility: hidden;"
+			>
+				<div class="relative w-full h-full overflow-hidden rounded-xl bg-[#05061a]">
+					<!-- blur stand-in for the collapsed state -->
+					<div
+						data-sem="blur"
+						class="absolute inset-0 rounded-xl pointer-events-none"
+						style="background: radial-gradient(70% 60% at 50% 45%, #1b1750, #0a0d26 80%); will-change: opacity;"
+					>
+					</div>
+
+					<!-- the launch: his rocket, macro, on its own exhaust — nothing else -->
+					<svg class="absolute inset-0 w-full h-full" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+						<defs>
+							<linearGradient id="ab-bg" x1="0" y1="0" x2="0" y2="1">
+								<stop offset="0" stop-color="#05060f" />
+								<stop offset="0.55" stop-color="#0c1032" />
+								<stop offset="1" stop-color="#1a1352" />
+							</linearGradient>
+
+							<radialGradient id="ab-halo" cx="0.5" cy="0.5" r="0.5">
+								<stop offset="0" stop-color="#6c5cf0" stop-opacity="0.14" />
+								<stop offset="1" stop-color="#6c5cf0" stop-opacity="0" />
+							</radialGradient>
+						</defs>
+
+						<rect width="800" height="1000" fill="url(#ab-bg)" />
+						<ellipse cx="400" cy="430" rx="390" ry="310" fill="url(#ab-halo)" />
+
+						<!-- sparse flat stars -->
+						<g fill="#cfd4ff">
+							<circle cx="80" cy="120" r="2.4" opacity="0.9" /><circle cx="430" cy="60" r="2.6" opacity="0.9" />
+							<circle cx="180" cy="70" r="1.6" opacity="0.6" /><circle cx="720" cy="80" r="2" opacity="0.8" />
+							<circle cx="60" cy="330" r="1.7" opacity="0.6" /><circle cx="660" cy="430" r="2.2" opacity="0.75" />
+							<circle cx="750" cy="300" r="1.5" opacity="0.55" /><circle cx="540" cy="140" r="1.5" opacity="0.55" />
+							<circle cx="120" cy="520" r="2" opacity="0.7" /><circle cx="730" cy="560" r="1.6" opacity="0.6" />
+							<circle cx="520" cy="700" r="1.8" opacity="0.6" /><circle cx="640" cy="780" r="2.2" opacity="0.7" />
+						</g>
+						<g stroke="#cfd4ff" stroke-width="1.4" opacity="0.8" stroke-linecap="round">
+							<path d="M690 190 v14 M683 197 h14" /><path d="M560 500 v12 M554 506 h12" />
+						</g>
+					</svg>
+
+					<div data-sem="overlay" class="absolute inset-0 bg-gradient-to-b from-void/45 via-transparent to-void/70 rounded-xl pointer-events-none"></div>
+
+					<!-- bottom band: the only text, like ECHO -->
+					<div data-sem="content" class="absolute inset-0 z-20 flex flex-col p-5 sm:p-7 md:p-10 pointer-events-none opacity-0 select-none">
+						<div class="absolute inset-x-0 bottom-0 h-[46%] bg-gradient-to-t from-void/95 via-void/60 to-transparent rounded-b-xl"></div>
+						<div class="flex-1 flex flex-col justify-center py-4">
+							<blockquote class="about-manifesto font-bold leading-[1.22] tracking-[-0.015em]">
+								<span class="about-quote-mark" aria-hidden="true">“</span>
+								<span data-quote>{t(lang, 'about.bio')}</span>
+								<span class="about-quote-author" data-quote-author>— {t(lang, 'about.author')}</span>
+							</blockquote>
+						</div>
+						<div class="relative pt-3 border-t border-white/10 flex flex-col gap-3">
+							<div class="flex items-center gap-2.5 flex-wrap">
+								<span class="text-[10px] font-bold tracking-widest uppercase text-white/80">{t(lang, 'about.discipline')}</span>
+								<div class="h-px bg-white/15 w-6"></div>
+								<span class="text-[10px] font-mono tracking-widest uppercase text-lavender/70">{t(lang, 'about.stack')}</span>
+							</div>
+							<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+								<p class="min-w-0 text-[9px] md:text-[10px] font-mono tracking-wider text-lavender/60">{t(lang, 'about.stats')}</p>
+								<div class="flex items-center gap-3 shrink-0">
+									<a href="#contact" class="pointer-events-auto px-5 py-2.5 rounded-full bg-white text-void hover:bg-lavender text-xs font-bold tracking-wider uppercase transition inline-flex items-center gap-2">
+										{t(lang, 'about.cta')}
+										<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+									</a>
+									<a href="#projects" class="pointer-events-auto px-5 py-2.5 rounded-full border border-white/30 hover:border-white text-xs font-bold tracking-wider uppercase transition">{t(lang, 'about.cta2')}</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex flex-col items-center text-center relative z-10 mt-4 pointer-events-none">
+					<p data-sem="date" class="text-xl md:text-2xl text-white/80 font-semibold tracking-wider uppercase">{t(lang, 'about.date')}</p>
+					<p data-sem="prompt" class="text-lavender/70 font-medium text-xs tracking-widest uppercase mt-1">{t(lang, 'about.prompt')}</p>
+				</div>
+			</div>
+
+			<div class="flex items-center justify-center text-center gap-2 sm:gap-4 w-full relative z-10 pointer-events-none flex-col">
+				<h2 data-sem="title-first" class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-[-0.04em] leading-[0.95] drop-shadow-2xl" style="will-change: transform, opacity;">
+					{t(lang, 'about.first')}
+				</h2>
+				<h2 data-sem="title-rest" class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-[-0.04em] leading-[0.95] drop-shadow-2xl" style="will-change: transform, opacity;">
+					{t(lang, 'about.rest')}
+				</h2>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.about-manifesto {
+		position: relative;
+		font-size: clamp(1.2rem, 3.4vw, 2.5rem);
+		color: rgba(255, 255, 255, 0.95);
+	}
+	@media (min-width: 768px) {
+		.about-manifesto {
+			font-size: clamp(1.4rem, 2.6vw, 2.4rem);
+			max-width: 54ch;
+		}
+	}
+	.about-quote-mark {
+		position: absolute;
+		top: -0.55em;
+		left: -0.08em;
+		font-size: 3.2em;
+		line-height: 1;
+		font-weight: 900;
+		background: linear-gradient(160deg, #b7a6ff, #7c5cf0);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		opacity: 0.85;
+	}
+	/* Words start as ghosts and whiten as the page scrolls — set per-word in JS */
+	.about-manifesto [data-qw],
+	.about-quote-author {
+		opacity: 0.16;
+	}
+	.about-quote-author {
+		display: block;
+		margin-top: 0.9em;
+		font-size: 0.55em;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		background: linear-gradient(120deg, #b7a6ff, #7c5cf0);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+</style>
+
+<script>
+	import { initScrollExpand } from '../engines/scroll-expand';
+	const s = document.querySelector<HTMLElement>('[data-sem-root]');
+	if (s) initScrollExpand(s);
+
+	// Quote scrub: words whiten in a wave that follows the page scroll itself.
+	const quote = document.querySelector<HTMLElement>('[data-quote]');
+	if (quote && s) {
+		const words = quote.textContent!.trim().split(/\s+/);
+		quote.innerHTML = words.map((w) => `<span data-qw>${w}</span>`).join(' ');
+		const spans = [...quote.querySelectorAll<HTMLElement>('[data-qw]')];
+		// The attribution is the last thing the wave whitens
+		const author = document.querySelector<HTMLElement>('[data-quote-author]');
+		if (author) spans.push(author);
+		const n = spans.length;
+		let queued = false;
+		const scrub = () => {
+			queued = false;
+			const total = s.offsetHeight - innerHeight;
+			if (total <= 0) return;
+			const sp = Math.min(Math.max(-s.getBoundingClientRect().top / total, 0), 1);
+			// The wave starts once the quote is almost fully visible and lands at
+			// the section's end; the front is ~2.5 words wide. On phones the card
+			// reveals earlier, so the wave does too.
+			const mobile = innerWidth < 768;
+			const t = Math.min(Math.max((sp - (mobile ? 0.62 : 0.85)) / (mobile ? 0.33 : 0.14), 0), 1);
+			const front = t * (n + 6);
+			spans.forEach((w, i) => {
+				w.style.opacity = (0.16 + 0.84 * Math.min(Math.max((front - i) / 2.5, 0), 1)).toFixed(3);
+			});
+		};
+		const onScroll = () => {
+			if (!queued) {
+				queued = true;
+				requestAnimationFrame(scrub);
+			}
+		};
+		new IntersectionObserver(([e]) => {
+			if (e.isIntersecting) {
+				addEventListener('scroll', onScroll, { passive: true });
+				scrub();
+			} else removeEventListener('scroll', onScroll);
+		}).observe(s);
+	}
+</script>
